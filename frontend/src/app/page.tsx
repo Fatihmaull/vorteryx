@@ -1,9 +1,9 @@
 "use client";
 
 import { useWeb3 } from "@/contexts/Web3Context";
-import { RegisterForm } from "@/components/RegisterForm";
-import { PendingVerification } from "@/components/PendingVerification";
-import { WalletConnect } from "@/components/WalletConnect";
+import RegisterForm from "@/components/RegisterForm";
+import PendingVerification from "@/components/PendingVerification";
+import WalletConnect from "@/components/WalletConnect";
 
 export default function Home() {
   const { isConnected, isCorrectNetwork, identity, connectWallet, isConnecting } = useWeb3();
