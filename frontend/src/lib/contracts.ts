@@ -6,8 +6,8 @@
 
 export const CONTRACT_ADDRESSES = {
   // Update these after deployment to Sepolia
-  identityManager: process.env.NEXT_PUBLIC_IDENTITY_MANAGER_ADDRESS || "",
-  votingEngine: process.env.NEXT_PUBLIC_VOTING_ENGINE_ADDRESS || "",
+  identityManager: process.env.NEXT_PUBLIC_IDENTITY_MANAGER_ADDRESS || "0x2D0f11c0FE0259B936b99512718b6f81f71c005D",
+  votingEngine: process.env.NEXT_PUBLIC_VOTING_ENGINE_ADDRESS || "0x748B7E997dB37Cb0E2b5E86ee0D20c53De4A373A",
 };
 
 export const IDENTITY_MANAGER_ABI = [
