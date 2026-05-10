@@ -57,3 +57,9 @@ export const REGIONS = [
 ] as const;
 
 export type Region = (typeof REGIONS)[number];
+
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
