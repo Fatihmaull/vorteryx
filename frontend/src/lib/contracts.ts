@@ -1,0 +1,83 @@
+// ═══════════════════════════════════════════════════════════════════════
+// VoteryX — Contract ABIs and Address Configuration
+// ═══════════════════════════════════════════════════════════════════════
+// After deploying contracts, update the addresses below.
+// ABIs are extracted from Hardhat compilation artifacts.
+
+export const CONTRACT_ADDRESSES = {
+  // Update these after deployment to Sepolia
+  identityManager: process.env.NEXT_PUBLIC_IDENTITY_MANAGER_ADDRESS || "",
+  votingEngine: process.env.NEXT_PUBLIC_VOTING_ENGINE_ADDRESS || "",
+};
+
+export const IDENTITY_MANAGER_ABI = [
+  "constructor(address _owner)",
+  "error AlreadyRegistered()",
+  "error AlreadyVerified()",
+  "error InvalidDomisili()",
+  "error InvalidNIK()",
+  "error InvalidName()",
+  "error NIKAlreadyUsed()",
+  "error NotRegistered()",
+  "error NotVerified()",
+  "event IdentityRegistered(address indexed user, uint256 indexed nik, string nama, string domisili)",
+  "event IdentityVerified(address indexed user, uint256 indexed nik)",
+  "event IdentityRevoked(address indexed user, uint256 indexed nik)",
+  "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+  "function batchVerifyUsers(address[] _users)",
+  "function checkCredential(address _user, string _requiredRegion) view returns (bool)",
+  "function getIdentity(address _user) view returns (string nama, uint256 nik, string domisili, bool userIsVerified)",
+  "function getRegisteredUsers(uint256 _offset, uint256 _limit) view returns (address[] users)",
+  "function isRegistered(address _user) view returns (bool)",
+  "function isVerified(address _user) view returns (bool)",
+  "function owner() view returns (address)",
+  "function registerIdentity(string _nama, uint256 _nik, string _domisili)",
+  "function renounceOwnership()",
+  "function revokeUser(address _user)",
+  "function totalRegistered() view returns (uint256)",
+  "function totalVerified() view returns (uint256)",
+  "function transferOwnership(address newOwner)",
+  "function verifyUser(address _user)",
+] as const;
+
+export const VOTING_ENGINE_ABI = [
+  "constructor(address _identityManager, address _owner)",
+  "error AlreadyVoted()",
+  "error CandidateRegionMismatch()",
+  "error ElectionAlreadyEnded()",
+  "error ElectionNotActive()",
+  "error ElectionNotPending()",
+  "error InvalidCandidate()",
+  "error InvalidCandidateName()",
+  "error InvalidElection()",
+  "error InvalidElectionTitle()",
+  "error InvalidRegion()",
+  "error NoCandidatesProvided()",
+  "error UnauthorizedRegion()",
+  "error VoterNotVerified()",
+  "event CandidateAdded(uint256 indexed candidateId, string name, string region)",
+  "event ElectionCreated(uint256 indexed electionId, string title, string region)",
+  "event ElectionEnded(uint256 indexed electionId, uint256 timestamp, uint256 totalVotes)",
+  "event ElectionStarted(uint256 indexed electionId, uint256 timestamp)",
+  "event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)",
+  "event VoteCast(uint256 indexed electionId, uint256 indexed candidateId, address indexed voter)",
+  "function addCandidate(string _name, string _region) returns (uint256 candidateId)",
+  "function candidateCount() view returns (uint256)",
+  "function candidates(uint256) view returns (uint256 id, string name, string region, uint256 voteCount)",
+  "function createElection(string _title, string _region, uint256[] _candidateIds) returns (uint256 electionId)",
+  "function electionCount() view returns (uint256)",
+  "function elections(uint256) view returns (uint256 id, string title, string region, uint8 status, uint256 totalVotes, uint256 createdAt, uint256 startedAt, uint256 endedAt)",
+  "function endElection(uint256 _electionId)",
+  "function getAllCandidates() view returns (tuple(uint256 id, string name, string region, uint256 voteCount)[])",
+  "function getAllElections() view returns (tuple(uint256 id, string title, string region, uint8 status, uint256[] candidateIds, uint256 totalVotes, uint256 createdAt, uint256 startedAt, uint256 endedAt)[])",
+  "function getCandidate(uint256 _candidateId) view returns (tuple(uint256 id, string name, string region, uint256 voteCount))",
+  "function getElectionCandidateIds(uint256 _electionId) view returns (uint256[])",
+  "function getElectionResults(uint256 _electionId) view returns (string title, string region, uint8 status, uint256 totalVotes, tuple(uint256 id, string name, string region, uint256 voteCount)[] electionCandidates)",
+  "function hasVoted(uint256, address) view returns (bool)",
+  "function identityManager() view returns (address)",
+  "function owner() view returns (address)",
+  "function renounceOwnership()",
+  "function startElection(uint256 _electionId)",
+  "function transferOwnership(address newOwner)",
+  "function vote(uint256 _electionId, uint256 _candidateId)",
+] as const;

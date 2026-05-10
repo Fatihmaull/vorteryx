@@ -1,0 +1,21 @@
+{
+  "name": "voteryx-contracts",
+  "version": "1.0.0",
+  "description": "VoteryX - Credential-Based Decentralized Voting Smart Contracts",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "coverage": "hardhat coverage",
+    "deploy:local": "hardhat ignition deploy ./ignition/modules/VoteryX.ts --network localhost",
+    "deploy:sepolia": "hardhat ignition deploy ./ignition/modules/VoteryX.ts --network sepolia",
+    "node": "hardhat node",
+    "clean": "hardhat clean"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "hardhat": "^2.22.0",
+    "dotenv": "^16.4.0"
+  }
+}
