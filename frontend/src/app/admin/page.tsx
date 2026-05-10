@@ -19,17 +19,28 @@ interface Election {
   status: number;
 }
 
+interface Candidate {
+  id: number;
+  name: string;
+  region: string;
+  voteCount: number;
+}
+
 export default function AdminPage() {
   const { isConnected, isOwner, identityContract, votingContract } = useWeb3();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [elections, setElections] = useState<Election[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isVerifying, setIsVerifying] = useState<string | null>(null);
   
   // State for forms
   const [newElectionTitle, setNewElectionTitle] = useState("");
   const [newElectionRegion, setNewElectionRegion] = useState("");
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
+  
   const [newCandidateName, setNewCandidateName] = useState("");
   const [newCandidateRegion, setNewCandidateRegion] = useState("");
+  
   const [isCreatingElection, setIsCreatingElection] = useState(false);
   const [isAddingCandidate, setIsAddingCandidate] = useState(false);
 
@@ -62,6 +73,16 @@ export default function AdminPage() {
         region: e.region,
         status: Number(e.status)
       })));
+
+      // Fetch candidates
+      const allCandidates = await votingContract.getAllCandidates();
+      setCandidates(allCandidates.map((c: any) => ({
+        id: Number(c.id),
+        name: c.name,
+        region: c.region,
+        voteCount: Number(c.voteCount)
+      })));
+
     } catch (err) {
       console.error("Failed to fetch admin data", err);
     }
@@ -114,16 +135,20 @@ export default function AdminPage() {
       alert("Title and Region required");
       return;
     }
+    if (selectedCandidateIds.length === 0) {
+      alert("You must select at least one candidate. If there are none, add candidates first.");
+      return;
+    }
+    
     setIsCreatingElection(true);
     try {
-      // For simplicity in this demo, creating an election with empty candidates list
-      // Real flow might require adding candidates first then creating election with their IDs
-      const tx = await votingContract.createElection(newElectionTitle, newElectionRegion, []);
+      const tx = await votingContract.createElection(newElectionTitle, newElectionRegion, selectedCandidateIds);
       await tx.wait();
       setNewElectionTitle("");
       setNewElectionRegion("");
+      setSelectedCandidateIds([]);
       await fetchData();
-      alert("Election Created! Make sure to add candidates.");
+      alert("Election Created successfully!");
     } catch (err) {
       console.error(err);
       alert("Failed to create election.");
@@ -144,6 +169,7 @@ export default function AdminPage() {
       await tx.wait();
       setNewCandidateName("");
       setNewCandidateRegion("");
+      await fetchData();
       alert("Candidate Added! They can now be included in elections.");
     } catch (err) {
       console.error(err);
@@ -176,6 +202,16 @@ export default function AdminPage() {
       alert("Failed to start election.");
     }
   };
+
+  const toggleCandidateSelection = (id: number) => {
+    if (selectedCandidateIds.includes(id)) {
+      setSelectedCandidateIds(selectedCandidateIds.filter(c => c !== id));
+    } else {
+      setSelectedCandidateIds([...selectedCandidateIds, id]);
+    }
+  };
+
+  const candidatesForRegion = candidates.filter(c => c.region === newElectionRegion);
 
   return (
     <div className="w-full max-w-5xl mx-auto py-8">
@@ -232,32 +268,8 @@ export default function AdminPage() {
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
             <h2 className="text-xl font-bold mb-6">Manajemen Pemilihan</h2>
             
-            <div className="space-y-4 mb-8">
-              <input 
-                type="text" 
-                placeholder="Title (e.g. Pilgub Jabar 2025)" 
-                className="w-full px-4 py-2 border rounded-lg bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700"
-                value={newElectionTitle}
-                onChange={e => setNewElectionTitle(e.target.value)}
-              />
-              <select 
-                className="w-full px-4 py-2 border rounded-lg bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700"
-                value={newElectionRegion}
-                onChange={e => setNewElectionRegion(e.target.value)}
-              >
-                <option value="">Pilih Region</option>
-                {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-              <button 
-                onClick={handleCreateElection}
-                disabled={isCreatingElection}
-                className="w-full py-3 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold rounded-xl hover:opacity-90 transition-opacity"
-              >
-                {isCreatingElection ? "Memproses..." : "+ Buat Pemilihan Baru"}
-              </button>
-            </div>
-
-            <div className="space-y-4 mb-8 border-t border-zinc-200 dark:border-zinc-800 pt-6">
+            <div className="space-y-4 mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-6">
+              <h3 className="font-bold text-zinc-500 uppercase text-xs tracking-wider mb-2">1. Tambah Kandidat</h3>
               <input 
                 type="text" 
                 placeholder="Candidate Name" 
@@ -281,9 +293,62 @@ export default function AdminPage() {
                 {isAddingCandidate ? "Memproses..." : "+ Tambah Kandidat"}
               </button>
             </div>
+            
+            <div className="space-y-4 mb-8">
+              <h3 className="font-bold text-zinc-500 uppercase text-xs tracking-wider mb-2">2. Buat Pemilihan Baru</h3>
+              <input 
+                type="text" 
+                placeholder="Title (e.g. Pilgub Jabar 2025)" 
+                className="w-full px-4 py-2 border rounded-lg bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700"
+                value={newElectionTitle}
+                onChange={e => setNewElectionTitle(e.target.value)}
+              />
+              <select 
+                className="w-full px-4 py-2 border rounded-lg bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700"
+                value={newElectionRegion}
+                onChange={e => {
+                  setNewElectionRegion(e.target.value);
+                  setSelectedCandidateIds([]); // reset selections on region change
+                }}
+              >
+                <option value="">Pilih Region</option>
+                {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+              
+              {newElectionRegion && (
+                <div className="p-3 border rounded-xl bg-zinc-50 dark:bg-zinc-800/50 dark:border-zinc-700">
+                  <p className="text-xs font-semibold mb-2">Pilih Kandidat untuk region ini:</p>
+                  {candidatesForRegion.length === 0 ? (
+                    <p className="text-xs text-red-500">Belum ada kandidat di region ini. Tambahkan kandidat terlebih dahulu!</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {candidatesForRegion.map(c => (
+                        <label key={c.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedCandidateIds.includes(c.id)}
+                            onChange={() => toggleCandidateSelection(c.id)}
+                            className="rounded border-zinc-300"
+                          />
+                          <span>{c.name} (ID: {c.id})</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button 
+                onClick={handleCreateElection}
+                disabled={isCreatingElection}
+                className="w-full py-3 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold rounded-xl hover:opacity-90 transition-opacity"
+              >
+                {isCreatingElection ? "Memproses..." : "+ Buat Pemilihan Baru"}
+              </button>
+            </div>
 
             <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
-              <h3 className="font-bold mb-4 text-zinc-500 uppercase text-xs tracking-wider">Pemilihan</h3>
+              <h3 className="font-bold mb-4 text-zinc-500 uppercase text-xs tracking-wider">Pemilihan Aktif</h3>
               <div className="space-y-4">
                 {elections.map(e => (
                   <div key={e.id} className={`p-4 border rounded-2xl ${e.status === 1 ? 'border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-900' : 'border-zinc-200 dark:border-zinc-800'}`}>
